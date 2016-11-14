@@ -89,28 +89,84 @@ func main() {
 		var buffer bytes.Buffer
 
 		name := c.PostForm("name")
-		completed := c.PostForm("completed")
 
-		stmt, err := db.Prepare("insert into todo (name, completed) values(?,?);")
+		stmt, err := db.Prepare("insert into todo (name) values(?);")
+
 		if err != nil {
 			fmt.Print(err.Error())
 		}
 
-		_, err = stmt.Exec(name, completed)
+		_, err = stmt.Exec(name)
 		if err != nil {
 			fmt.Print(err.Error())
 		}
 
 		buffer.WriteString(name)
-		buffer.WriteString(" ")
-		buffer.WriteString(completed)
 
 		defer stmt.Close()
 
 		b := buffer.String()
-		fmt.Println(b)
+
 		c.JSON(http.StatusOK, gin.H{
 			"message": fmt.Sprintf(" %s successfully created", b),
+		})
+	})
+
+	r.PATCH("/todos/:id", func(c *gin.Context) {
+		var nameBuffer bytes.Buffer
+		var completedBuffer bytes.Buffer
+		var idBuffer bytes.Buffer
+
+		id := c.Param("id")
+		name := c.PostForm("name")
+		completed := c.PostForm("completed")
+
+		stmt, err := db.Prepare("update todo set name=?, completed=? where id= ?;")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		_, err = stmt.Exec(name, completed, id)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		nameBuffer.WriteString(name)
+		completedBuffer.WriteString(completed)
+		idBuffer.WriteString(id)
+		nb := nameBuffer.String()
+		cb := completedBuffer.String()
+		ib := idBuffer.String()
+
+		defer stmt.Close()
+		c.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("Successfully updated ID %[1]s with a name = %[2]s and completed = %[3]s", ib, nb, cb),
+		})
+	})
+
+	r.DELETE("/todos/:id", func(c *gin.Context) {
+		var buffer bytes.Buffer
+
+		id := c.Param("id")
+
+		stmt, err := db.Prepare("delete from todo where id= ?;")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		_, err = stmt.Exec(id)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		buffer.WriteString(id)
+
+		defer stmt.Close()
+
+		b := buffer.String()
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("deleted todo with id=%s", b),
 		})
 	})
 
