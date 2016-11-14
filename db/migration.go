@@ -19,7 +19,7 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
-	stmt, err := db.Prepare("CREATE TABLE todo (id int NOT NULL AUTO_INCREMENT, name TINYTEXT, completed boolean, PRIMARY KEY (id));")
+	stmt, err := db.Prepare("CREATE TABLE todo (id int NOT NULL AUTO_INCREMENT, name TINYTEXT, completed boolean NOT NULL DEFAULT false, PRIMARY KEY (id));")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
